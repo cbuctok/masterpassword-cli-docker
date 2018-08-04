@@ -1,12 +1,12 @@
-FROM ubuntu
+FROM debian:stable-slim
 
-WORKDIR /bin
+# For i386
+#FROM i386/debian:stable-slim
+#ENTRYPOINT ["linux32", "--"]
 
-RUN apt update; apt -y install wget cmake libsodium-dev libjson-c-dev libncurses-dev
-RUN wget https://ssl.masterpasswordapp.com/masterpassword-cli.tar.gz
-RUN tar xvfz masterpassword-cli.tar.gz && rm masterpassword-cli.tar.gz &&\
-        ./build
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199
+RUN mkdir -p /usr/share/man/man1
 
-VOLUME /root/.mpw.d/
-
-CMD /bin/mpw
+RUN apt-get update && apt-get install -y default-jdk-headless git-core bash libtool automake autoconf make g++
+RUN git clone --depth=3 $(: --shallow-submodules) --recurse-submodules https://gitlab.com/MasterPassword/MasterPassword.git /mpw
+RUN cd /mpw/gradle && ./gradlew -i clean build
